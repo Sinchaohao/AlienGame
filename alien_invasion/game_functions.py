@@ -39,42 +39,6 @@ def check_events(ai_settings, screen, ship, bullets):
         elif event.type == pygame.K_q:
             sys.exit()
 
-def update_screen(ai_settings, screen, ship, bullets, aliens):
-    """更新屏幕上的图像，并切换到新屏幕"""
-
-    # 每次循环时都重绘屏幕
-    screen.fill(ai_settings.bg_color)
-
-    # 在飞船和外星人后面重绘所有子弹
-    for bullet in bullets.sprites():
-        bullet.draw_bullet()
-    ship.blitme()
-    # alien.blitme()
-    aliens.draw(screen)
-
-    # 让最近绘制的屏幕可见
-    pygame.display.flip()
-
-
-def update_bullets(bullets):
-    """更新子弹的位置，并删除已消失的子弹"""
-    # 更新子弹的位置
-    bullets.update()
-
-    # 删除消失的子弹
-    for bullet in bullets.copy():
-        if bullet.rect.top <= 0:
-            bullets.remove( bullet )
-    # for bullet in bullets.copy():
-    #     if bullet.rect.buttom <= 0:
-    #         bullets.remove(bullet)
-
-def update_aliens(ai_settings, aliens):
-    """
-        检查是否有外星人位于屏幕边缘，并更新整群外星人的位置
-        """
-    check_fleet_edges(ai_settings, aliens)
-
 def fire_bullets(ai_settings, screen, ship, bullets):
     if len(bullets) < ai_settings.bullets_allowed:
         new_bullet = Bullet(ai_settings, screen, ship)
@@ -130,7 +94,44 @@ def change_fleet_direction(ai_settings, aliens):
         alien.rect.y += ai_settings.fleet_drop_speed
     ai_settings.fleet_direction *= -1
 
+def update_screen(ai_settings, screen, ship, bullets, aliens):
+    """更新屏幕上的图像，并切换到新屏幕"""
 
+    # 每次循环时都重绘屏幕
+    screen.fill(ai_settings.bg_color)
 
+    # 在飞船和外星人后面重绘所有子弹
+    for bullet in bullets.sprites():
+        bullet.draw_bullet()
+    ship.blitme()
+    # alien.blitme()
+    aliens.draw(screen)
 
+    # 让最近绘制的屏幕可见
+    pygame.display.flip()
+
+def update_bullets(ai_settings, screen, ship, aliens, bullets):
+    """更新子弹的位置，并删除已消失的子弹"""
+    # 更新子弹的位置
+    bullets.update()
+
+    # 删除消失的子弹
+    for bullet in bullets.copy():
+        if bullet.rect.top <= 0:
+            bullets.remove( bullet )
+
+    # 检查是否有子弹击中了外星人
+    # 如果是这样，就删除相应的子弹和外星人
+    collisions = pygame.sprite.groupcollide(bullets, aliens, True, True)
+
+    if len(aliens) == 0:
+        # 删除现有的子弹并新建一群外星人
+        bullets.empty()
+        create_fleet(ai_settings, screen, ship, aliens)
+
+def update_aliens(ai_settings, aliens):
+    """
+        检查是否有外星人位于屏幕边缘，并更新整群外星人的位置
+        """
+    check_fleet_edges(ai_settings, aliens)
 
